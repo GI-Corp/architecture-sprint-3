@@ -14,10 +14,23 @@ entity User {
     password_hash String
 }
 
+entity UserSession {
+    primary_key(id) UUID
+    user_id UUID
+    token String UNIQUE
+    created_at DateTime
+    expires_at DateTime
+}
+
 entity House {
     primary_key(id) UUID
     address String UNIQUE
+}
+
+entity UserHouse {
+    primary_key(id) UUID
     user_id UUID
+    house_id UUID
 }
 
 entity Device {
@@ -47,6 +60,14 @@ entity TelemetryData {
     humidity Float
 }
 
+entity DeviceLog {
+    primary_key(id) UUID
+    device_id UUID
+    timestamp DateTime
+    event_type String
+    details String
+}
+
 entity HeatingControl {
     primary_key(id) UUID
     house_id UUID
@@ -68,14 +89,25 @@ entity SensorData {
     value Float
 }
 
-User ||--|{ House : "owns"
+entity EventLog {
+    primary_key(id) UUID
+    source String
+    event_type String
+    timestamp DateTime
+    message String
+}
+
+User ||--o{ UserSession : "has"
+User ||--o{ UserHouse : "links"
+UserHouse ||--|| House : "associates"
 House ||--o{ Device : "has"
 Device ||--|| DeviceType : "belongs to"
 Device ||--o{ Module : "contains"
-Module ||--|{ Device : "attached to"
 Module ||--o{ Sensor : "has"
 Sensor ||--o{ SensorData : "generates"
 Device ||--o{ TelemetryData : "sends"
+Device ||--o{ DeviceLog : "logs"
 House ||--|| HeatingControl : "controls"
+Device -- EventLog : "triggers"
 
 @enduml
