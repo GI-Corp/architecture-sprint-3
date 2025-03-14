@@ -1,0 +1,87 @@
+@startuml
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+title "Тёплый Дом - Компонентная Диаграмма"
+
+
+' ========== User Service Components ==========
+Container_Boundary(userService, "User Service") {
+    Component(UserController, "UserController", "REST API для пользователей")
+    Component(UserService, "UserService", "Бизнес-логика управления пользователями")
+    Component(UserRepository, "UserRepository", "Доступ к данным пользователей")
+    Component(UserEventProducer, "UserEventProducer", "Публикация событий в Kafka")
+}
+Rel(UserController, UserService, "Вызов бизнес-логики (REST API)")
+Rel(UserService, UserRepository, "Чтение/запись данных пользователей")
+Rel(UserService, UserEventProducer, "Публикация событий (Kafka)")
+
+' ========== Heating Control Service Components ==========
+Container_Boundary(heatingService, "Heating Control Service") {
+    Component(HeatingController, "HeatingController", "API управления отоплением")
+    Component(HeatingService, "HeatingService", "Логика управления отоплением")
+    Component(HeatingRepository, "HeatingRepository", "Хранение данных об отоплении")
+    Component(HeatingEventProducer, "HeatingEventProducer", "Публикация событий в Kafka")
+}
+Rel(HeatingController, HeatingService, "Вызов бизнес-логики (REST API)")
+Rel(HeatingService, HeatingRepository, "Чтение/запись данных об отоплении")
+Rel(HeatingService, HeatingEventProducer, "Публикация событий (Kafka)")
+
+' ========== Temperature Monitoring Service Components ==========
+Container_Boundary(monitoringService, "Temperature Monitoring Service") {
+    Component(SensorDataController, "SensorDataController", "Обработка данных с датчиков")
+    Component(SensorService, "SensorService", "Логика обработки температурных данных")
+    Component(SensorRepository, "SensorRepository", "Хранение данных температур")
+    Component(SensorEventProducer, "SensorEventProducer", "Публикация событий в Kafka")
+}
+Rel(SensorDataController, SensorService, "Вызов бизнес-логики (REST API)")
+Rel(SensorService, SensorRepository, "Чтение/запись данных температур")
+Rel(SensorService, SensorEventProducer, "Публикация событий (Kafka)")
+
+' ========== Device Management Service Components ==========
+Container_Boundary(deviceService, "Device Management Service") {
+    Component(DeviceController, "DeviceController", "API управления устройствами")
+    Component(DeviceService, "DeviceService", "Логика управления устройствами")
+    Component(DeviceRepository, "DeviceRepository", "Хранение данных устройств")
+    Component(DeviceEventProducer, "DeviceEventProducer", "Публикация событий в Kafka")
+}
+Rel(DeviceController, DeviceService, "Вызов бизнес-логики (REST API)")
+Rel(DeviceService, DeviceRepository, "Чтение/запись данных устройств")
+Rel(DeviceService, DeviceEventProducer, "Публикация событий (Kafka)")
+
+' ========== API Gateway Components ==========
+Container_Boundary(apiGateway, "API Gateway (Kong)") {
+    Component(AuthMiddleware, "AuthMiddleware", "Авторизация и аутентификация")
+    Component(Routing, "Routing", "Маршрутизация запросов")
+    Component(RateLimiter, "RateLimiter", "Ограничение нагрузки")
+}
+Rel(AuthMiddleware, Routing, "Передача авторизованных запросов")
+Rel(Routing, RateLimiter, "Ограничение количества запросов")
+Rel(apiGateway, userService, "Маршрутизация к User Service (REST API)")
+Rel(apiGateway, heatingService, "Маршрутизация к Heating Control Service (REST API)")
+Rel(apiGateway, monitoringService, "Маршрутизация к Temperature Monitoring Service (REST API)")
+Rel(apiGateway, deviceService, "Маршрутизация к Device Management Service (REST API)")
+
+' ========== Monitoring & Logging Components ==========
+Container_Boundary(monitoring, "Monitoring & Logging") {
+    Component(Prometheus, "Prometheus", "Сбор метрик системы")
+    Component(Grafana, "Grafana", "Дашборды мониторинга")
+    Component(ELK, "ELK Stack", "Централизованный сбор логов")
+    Component(Alertmanager, "Alertmanager", "Оповещения о сбоях")
+}
+Rel(apiGateway, Prometheus, "Сбор метрик API")
+Rel(heatingService, Prometheus, "Сбор метрик отопления")
+Rel(Prometheus, Grafana, "Отображение данных в дашбордах")
+Rel(apiGateway, ELK, "Отправка логов")
+Rel(Alertmanager, Grafana, "Настройка оповещений")
+
+' ========== Client Applications ==========
+Container(mobileApp, "Mobile App", "Flutter", "Управление отоплением и настройками")
+Container(webApp, "Web Application", "React", "Веб-интерфейс управления")
+Rel(user, mobileApp, "Использует для управления")
+Rel(user, webApp, "Использует через браузер")
+Rel(mobileApp, apiGateway, "Отправка запросов")
+Rel(webApp, apiGateway, "Отправка запросов")
+
+
+@enduml

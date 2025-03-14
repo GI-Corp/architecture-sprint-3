@@ -1,0 +1,93 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+title "Тёплый Дом" - Микросервисная Архитектура
+
+top to bottom direction
+
+' ========== УЧАСТНИКИ ==========
+Person(user, "Пользователь", "Житель дома, управляющий отоплением")
+Person(technician, "Техник", "Специалист, подключающий устройства")
+
+' ========== ВНЕШНИЕ СИСТЕМЫ ==========
+System_Ext(cloudStorage, "Cloud Storage (S3)", "Хранение архивных данных и логов")
+
+' ========== НАГРУЗОЧНОЕ БАЛАНСИРОВАНИЕ И API GATEWAY ==========
+Container(nginx, "Load Balancer", "NGINX", "Распределение трафика между API Gateway и сервисами")
+Container(apiGateway, "API Gateway", "Kong API Gateway", "Авторизация, маршрутизация, логирование, SSO")
+
+' ========== КЛИЕНТСКИЕ ПРИЛОЖЕНИЯ ==========
+Container(mobileApp, "Mobile App", "Flutter", "Мобильное управление устройствами")
+Container(webApp, "Web Application", "React", "Веб-интерфейс управления")
+
+' ========== ГЛАВНАЯ СИСТЕМА ==========
+System_Boundary(warmHome, "Тёплый Дом") {
+
+    ' === Сервис пользователей ===
+    Container(userService, "User Service", "Java, Spring Boot", "Управление пользователями и ролями")
+    ContainerDb(userDB, "User DB", "PostgreSQL", "Хранение данных о пользователях")
+
+    ' === Сервис управления отоплением ===
+    Container(heatingService, "Heating Control Service", "Java, Spring Boot", "Логика отопления и терморегуляция")
+    ContainerDb(heatingDB, "Heating DB", "PostgreSQL", "Хранение данных об отоплении")
+
+    ' === Сервис мониторинга температуры ===
+    Container(monitoringService, "Temperature Monitoring Service", "Node.js", "Получение данных с датчиков")
+    ContainerDb(monitoringDB, "InfluxDB", "Хранение истории температур")
+
+    ' === Сервис управления устройствами ===
+    Container(deviceService, "Device Management Service", "Golang", "Управление подключёнными устройствами")
+    ContainerDb(deviceDB, "MongoDB", "Хранение информации об устройствах")
+
+
+    ' === Брокер сообщений ===
+    Container(kafka, "Message Broker", "Apache Kafka", "Асинхронное взаимодействие между сервисами")
+
+    ' === Мониторинг и логирование ===
+    Container(prometheus, "Metrics Monitoring", "Prometheus", "Сбор метрик системы")
+    Container(grafana, "Visualization", "Grafana", "Дашборды для мониторинга")
+    Container(elk, "Logging", "ELK Stack", "Анализ логов")
+    Container(alertmanager, "Alerting", "Alertmanager", "Настройка уведомлений")
+}
+
+' ========== ВЗАИМОДЕЙСТВИЕ КЛИЕНТОВ ==========
+Rel(user, mobileApp, "Управление отоплением и настройками")
+Rel(user, webApp, "Управление отоплением через браузер")
+Rel(mobileApp, nginx, "Отправка запросов")
+Rel(webApp, nginx, "Отправка запросов")
+
+' ========== API Gateway ==========
+Rel(nginx, apiGateway, "Маршрутизация запросов и авторизация")
+
+' ========== Микросервисное взаимодействие ==========
+Rel(apiGateway, userService, "Запрос данных о пользователях", "REST API")
+Rel(apiGateway, heatingService, "Управление отоплением", "REST API")
+Rel(apiGateway, monitoringService, "Получение данных с датчиков", "REST API")
+Rel(apiGateway, deviceService, "Управление устройствами", "REST API")
+
+' ========== Взаимодействие сервисов через Kafka ==========
+Rel(heatingService, kafka, "Публикация событий управления отоплением", "Event")
+Rel(monitoringService, kafka, "Публикация данных с датчиков", "Event")
+Rel(deviceService, kafka, "Регистрация новых устройств", "Event")
+Rel(kafka, heatingService, "Обработка команд управления отоплением", "Event")
+Rel(kafka, monitoringService, "Обработка данных с датчиков", "Event")
+
+' ========== Связь с базами данных ==========
+Rel(userService, userDB, "Чтение/запись пользователей")
+Rel(heatingService, heatingDB, "Чтение/запись данных об отоплении")
+Rel(monitoringService, monitoringDB, "Чтение/запись температурных данных")
+Rel(deviceService, deviceDB, "Чтение/запись устройств")
+
+' ========== Мониторинг ==========
+Rel(nginx, prometheus, "Сбор метрик API", "Metrics")
+Rel(apiGateway, elk, "Отправка логов", "Logging")
+Rel(heatingService, prometheus, "Сбор метрик отопления", "Metrics")
+Rel(alertmanager, grafana, "Отправка уведомлений")
+
+' ========== Взаимодействие с внешними системами ==========
+Rel(deviceService, cloudStorage, "Сохранение данных устройств", "REST API")
+
+' ========== Техник и настройка устройств ==========
+Rel(technician, deviceService, "Добавление и настройка устройств")
+
+@enduml

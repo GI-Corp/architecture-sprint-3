@@ -1,0 +1,145 @@
+@startuml
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+' User Service - Code Diagram
+title "User Service - Code Diagram"
+class User {
+  +String id
+  +String name
+  +String email
+  +void register()
+  +void login()
+}
+
+class UserService {
+  +User getUserById(String id)
+  +void createUser(User user)
+}
+
+class UserRepository {
+  +User findById(String id)
+  +void save(User user)
+}
+
+UserService --> UserRepository : Uses (1-1)
+UserService --> User : Manages (1-*)
+User --> Device : Owns (1-*)
+
+' Heating Control Service - Code Diagram
+title "Heating Control Service - Code Diagram"
+class HeatingSystem {
+  +String deviceId
+  +double currentTemperature
+  +void adjustTemperature(double target)
+}
+
+class HeatingService {
+  +void setTemperature(String deviceId, double temperature)
+  +double getTemperature(String deviceId)
+}
+
+class HeatingRepository {
+  +void saveTemperature(String deviceId, double temperature)
+  +double fetchTemperature(String deviceId)
+}
+
+HeatingService --> HeatingRepository : Reads/Writes (1-*)
+HeatingService --> HeatingSystem : Controls (1-1)
+HeatingSystem --> Device : Associated with (1-1)
+
+' Temperature Monitoring Service - Code Diagram
+title "Temperature Monitoring Service - Code Diagram"
+class Sensor {
+  +String id
+  +double temperature
+  +Date timestamp
+  +void collectData()
+}
+
+class SensorService {
+  +void processSensorData(Sensor sensor)
+  +List<Sensor> getRecentData()
+}
+
+class SensorRepository {
+  +void save(Sensor sensor)
+  +List<Sensor> findRecentData()
+}
+
+SensorService --> SensorRepository : Stores Data (1-*)
+Sensor --> SensorService : Sends Data (1-*)
+Device --> Sensor : Contains (1-*)
+
+' Device Management Service - Code Diagram
+title "Device Management Service - Code Diagram"
+class Device {
+  +String id
+  +String type
+  +boolean status
+  +void activate()
+  +void deactivate()
+}
+
+class DeviceService {
+  +void registerDevice(Device device)
+  +Device getDeviceById(String id)
+}
+
+class DeviceRepository {
+  +void save(Device device)
+  +Device findById(String id)
+}
+
+DeviceService --> DeviceRepository : Stores Devices (1-*)
+DeviceService --> Device : Manages (1-1)
+
+' API Gateway
+title "API Gateway - Code Diagram"
+class ApiGateway {
+  +void routeRequest(String service, String endpoint)
+}
+
+ApiGateway --> UserService : Routes Requests
+ApiGateway --> HeatingService : Routes Requests
+ApiGateway --> SensorService : Routes Requests
+ApiGateway --> DeviceService : Routes Requests
+
+' Kafka Integration
+title "Kafka Integration - Code Diagram"
+class Kafka {
+  +void publish(String topic, Object message)
+  +Object consume(String topic)
+}
+
+UserService --> Kafka : Publishes Events
+HeatingService --> Kafka : Publishes Events
+SensorService --> Kafka : Publishes Events
+DeviceService --> Kafka : Publishes Events
+
+Kafka --> UserService : Consumes Events
+Kafka --> HeatingService : Consumes Events
+Kafka --> SensorService : Consumes Events
+Kafka --> DeviceService : Consumes Events
+
+' Logging & Monitoring
+title "Logging & Monitoring - Code Diagram"
+class LoggingService {
+  +void log(String message)
+}
+
+class MonitoringService {
+  +void trackMetric(String name, double value)
+}
+
+UserService --> LoggingService : Logs Events
+HeatingService --> LoggingService : Logs Events
+SensorService --> LoggingService : Logs Events
+DeviceService --> LoggingService : Logs Events
+
+UserService --> MonitoringService : Tracks Metrics
+HeatingService --> MonitoringService : Tracks Metrics
+SensorService --> MonitoringService : Tracks Metrics
+DeviceService --> MonitoringService : Tracks Metrics
+
+@enduml
