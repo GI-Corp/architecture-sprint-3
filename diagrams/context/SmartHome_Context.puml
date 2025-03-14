@@ -1,0 +1,24 @@
+@startuml
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Context.puml
+
+title "Тёплый Дом" - Контекстная диаграмма
+
+top to bottom direction
+
+' Определение участников
+Person(user, "Пользователь", "Житель дома, управляющий отоплением")
+Person(technician, "Техник", "Специалист компании, подключающий датчики")
+
+' Определение системы
+System(warmHome, "Тёплый Дом", "Монолитная система управления отоплением")
+System_Ext(sensorSystem, "Система датчиков", "Датчики температуры в домах")
+
+' Взаимодействие
+Rel(user, warmHome, "Удалённо включает/выключает отопление")
+Rel(user, warmHome, "Настраивает целевую температуру")
+Rel(warmHome, sensorSystem, "Получает данные о температуре в доме")
+Rel(sensorSystem, warmHome, "Передаёт данные с датчиков")
+Rel(technician, warmHome, "Подключает новые датчики и системы")
+
+@enduml
