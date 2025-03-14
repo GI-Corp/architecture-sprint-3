@@ -94,5 +94,52 @@ class DeviceRepository {
 DeviceService --> DeviceRepository : Stores Devices (1-*)
 DeviceService --> Device : Manages (1-1)
 
+' API Gateway
+title "API Gateway - Code Diagram"
+class ApiGateway {
+  +void routeRequest(String service, String endpoint)
+}
+
+ApiGateway --> UserService : Routes Requests
+ApiGateway --> HeatingService : Routes Requests
+ApiGateway --> SensorService : Routes Requests
+ApiGateway --> DeviceService : Routes Requests
+
+' Kafka Integration
+title "Kafka Integration - Code Diagram"
+class Kafka {
+  +void publish(String topic, Object message)
+  +Object consume(String topic)
+}
+
+UserService --> Kafka : Publishes Events
+HeatingService --> Kafka : Publishes Events
+SensorService --> Kafka : Publishes Events
+DeviceService --> Kafka : Publishes Events
+
+Kafka --> UserService : Consumes Events
+Kafka --> HeatingService : Consumes Events
+Kafka --> SensorService : Consumes Events
+Kafka --> DeviceService : Consumes Events
+
+' Logging & Monitoring
+title "Logging & Monitoring - Code Diagram"
+class LoggingService {
+  +void log(String message)
+}
+
+class MonitoringService {
+  +void trackMetric(String name, double value)
+}
+
+UserService --> LoggingService : Logs Events
+HeatingService --> LoggingService : Logs Events
+SensorService --> LoggingService : Logs Events
+DeviceService --> LoggingService : Logs Events
+
+UserService --> MonitoringService : Tracks Metrics
+HeatingService --> MonitoringService : Tracks Metrics
+SensorService --> MonitoringService : Tracks Metrics
+DeviceService --> MonitoringService : Tracks Metrics
 
 @enduml
