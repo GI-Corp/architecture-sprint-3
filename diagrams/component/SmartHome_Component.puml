@@ -1,0 +1,54 @@
+@startuml
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+' User Service Components
+title "User Service - Component Diagram"
+Container_Boundary(userService, "User Service") {
+    Component(UserController, "UserController", "Handles user-related REST API requests (JSON)")
+    Component(UserService, "UserService", "Business logic for user management")
+    Component(UserRepository, "UserRepository", "Data access for users")
+    Component(UserEventProducer, "UserEventProducer", "Publishes user events to Kafka")
+}
+Rel(UserController, UserService, "Calls business logic via REST (JSON)")
+Rel(UserService, UserRepository, "Reads/Writes user data")
+Rel(UserService, UserEventProducer, "Publishes user events (Kafka)")
+
+' Heating Control Service Components
+title "Heating Control Service - Component Diagram"
+Container_Boundary(heatingService, "Heating Control Service") {
+    Component(HeatingController, "HeatingController", "API for heating control (REST, JSON)")
+    Component(HeatingService, "HeatingService", "Handles heating logic")
+    Component(HeatingRepository, "HeatingRepository", "Stores heating data")
+    Component(HeatingEventProducer, "HeatingEventProducer", "Publishes heating status updates (Kafka)")
+}
+Rel(HeatingController, HeatingService, "Calls business logic via REST (JSON)")
+Rel(HeatingService, HeatingRepository, "Reads/Writes heating data")
+Rel(HeatingService, HeatingEventProducer, "Publishes heating events (Kafka)")
+
+' Temperature Monitoring Service Components
+title "Temperature Monitoring Service - Component Diagram"
+Container_Boundary(monitoringService, "Temperature Monitoring Service") {
+    Component(SensorDataController, "SensorDataController", "Processes sensor data (REST, JSON)")
+    Component(SensorService, "SensorService", "Handles temperature data logic")
+    Component(SensorRepository, "SensorRepository", "Stores temperature data")
+    Component(SensorEventProducer, "SensorEventProducer", "Publishes sensor readings (Kafka)")
+}
+Rel(SensorDataController, SensorService, "Calls business logic via REST (JSON)")
+Rel(SensorService, SensorRepository, "Reads/Writes sensor data")
+Rel(SensorService, SensorEventProducer, "Publishes sensor events (Kafka)")
+
+' Device Management Service Components
+title "Device Management Service - Component Diagram"
+Container_Boundary(deviceService, "Device Management Service") {
+    Component(DeviceController, "DeviceController", "API for device management (REST, JSON)")
+    Component(DeviceService, "DeviceService", "Handles device management logic")
+    Component(DeviceRepository, "DeviceRepository", "Stores device data")
+    Component(DeviceEventProducer, "DeviceEventProducer", "Publishes device updates (Kafka)")
+}
+Rel(DeviceController, DeviceService, "Calls business logic via REST (JSON)")
+Rel(DeviceService, DeviceRepository, "Reads/Writes device data")
+Rel(DeviceService, DeviceEventProducer, "Publishes device events (Kafka)")
+
+
+@enduml

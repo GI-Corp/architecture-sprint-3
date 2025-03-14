@@ -1,0 +1,41 @@
+@startuml
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+title "Тёплый Дом" - Контейнерная диаграмма
+
+top to bottom direction
+
+' Определение участников
+Person(user, "Пользователь", "Житель дома, управляющий отоплением")
+Person(technician, "Техник", "Специалист компании, подключающий оборудование")
+
+' Определение системы
+System_Boundary(warmHome, "Тёплый Дом") {
+    Container(apiGateway, "API Gateway", "Spring Cloud Gateway", "Единая точка входа для клиентов")
+    Container(userService, "User Service", "Java, Spring Boot", "Управление пользователями и настройками")
+    Container(heatingService, "Heating Control Service", "Java, Spring Boot", "Управление отоплением и температурой")
+    Container(monitoringService, "Temperature Monitoring Service", "Java, Spring Boot", "Получение данных с датчиков")
+    Container(deviceService, "Device Management Service", "Java, Spring Boot", "Управление устройствами")
+    Container(kafka, "Message Broker", "Apache Kafka", "Асинхронное взаимодействие между сервисами")
+    Container(database, "PostgreSQL", "База данных", "Хранение данных о пользователях, устройствах и температурах")
+}
+
+' Взаимодействие
+Rel(user, apiGateway, "Отправляет команды по управлению отоплением и просмотр данных")
+Rel(apiGateway, userService, "Запрос данных о пользователях")
+Rel(apiGateway, heatingService, "Управление отоплением")
+Rel(apiGateway, monitoringService, "Получение текущей температуры")
+Rel(apiGateway, deviceService, "Подключение и управление устройствами")
+
+Rel(heatingService, kafka, "Отправка команд на изменение состояния отопления")
+Rel(monitoringService, kafka, "Отправка данных с датчиков")
+Rel(kafka, heatingService, "Обработка команд управления отоплением")
+Rel(kafka, monitoringService, "Обработка данных с датчиков")
+Rel(heatingService, database, "Сохранение данных об отоплении")
+Rel(monitoringService, database, "Сохранение истории температуры")
+Rel(deviceService, database, "Управление подключёнными устройствами")
+
+Rel(technician, deviceService, "Подключение новых устройств и настройка системы")
+
+@enduml
