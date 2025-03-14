@@ -97,9 +97,8 @@
 
 Диаграмма С4 (Context Diagram) as-is:
 
-```markdown
-[Диаграмма контекста as-is](./diagrams/context/context.png)
-```
+![Диаграмма контекста as-is](./diagrams/context/context.png)
+
 
 # Задание 2. Проектирование микросервисной архитектуры
 
