@@ -1,0 +1,81 @@
+@startuml
+
+!define primary_key(x) <b>x</b>
+!define foreign_key(x) <i>x</i>
+
+skinparam linetype ortho
+
+title ER-диаграмма "Тёплый Дом"
+
+entity User {
+    primary_key(id) UUID
+    name String
+    email String UNIQUE
+    password_hash String
+}
+
+entity House {
+    primary_key(id) UUID
+    address String UNIQUE
+    user_id UUID
+}
+
+entity Device {
+    primary_key(id) UUID
+    serial_number String UNIQUE
+    status String
+    house_id UUID
+    device_type_id UUID
+}
+
+entity DeviceType {
+    primary_key(id) UUID
+    name String UNIQUE
+}
+
+entity Module {
+    primary_key(id) UUID
+    name String
+    device_id UUID
+}
+
+entity TelemetryData {
+    primary_key(id) UUID
+    device_id UUID
+    timestamp DateTime
+    temperature Float
+    humidity Float
+}
+
+entity HeatingControl {
+    primary_key(id) UUID
+    house_id UUID
+    target_temperature Float
+    status String
+}
+
+entity Sensor {
+    primary_key(id) UUID
+    module_id UUID
+    sensor_type String
+    last_value Float
+}
+
+entity SensorData {
+    primary_key(id) UUID
+    sensor_id UUID
+    timestamp DateTime
+    value Float
+}
+
+User ||--|{ House : "owns"
+House ||--o{ Device : "has"
+Device ||--|| DeviceType : "belongs to"
+Device ||--o{ Module : "contains"
+Module ||--|{ Device : "attached to"
+Module ||--o{ Sensor : "has"
+Sensor ||--o{ SensorData : "generates"
+Device ||--o{ TelemetryData : "sends"
+House ||--|| HeatingControl : "controls"
+
+@enduml

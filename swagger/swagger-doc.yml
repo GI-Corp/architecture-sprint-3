@@ -1,0 +1,130 @@
+openapi: 3.0.1
+info:
+  title: "Smart Home API"
+  description: "API для управления устройствами и мониторинга температуры."
+  version: "1.0.0"
+servers:
+  - url: "https://api.smart-home.com"
+    description: "Production Server"
+  - url: "https://staging.api.smart-home.com"
+    description: "Staging Server"
+
+paths:
+  /devices:
+    get:
+      summary: "Получить список всех устройств"
+      tags:
+        - "Device Management"
+      responses:
+        "200":
+          description: "Список устройств получен успешно."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Device"
+    post:
+      summary: "Добавить новое устройство"
+      tags:
+        - "Device Management"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeviceCreateRequest"
+      responses:
+        "201":
+          description: "Устройство успешно создано."
+        "400":
+          description: "Некорректный запрос."
+
+  /devices/{deviceId}:
+    get:
+      summary: "Получить информацию об устройстве"
+      tags:
+        - "Device Management"
+      parameters:
+        - name: "deviceId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "Информация об устройстве."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+        "404":
+          description: "Устройство не найдено."
+
+  /temperature:
+    get:
+      summary: "Получить последние показания датчиков температуры"
+      tags:
+        - "Temperature Monitoring"
+      responses:
+        "200":
+          description: "Последние показания температуры."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TemperatureData"
+
+components:
+  schemas:
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        serial_number:
+          type: string
+          example: "SN123456789"
+        status:
+          type: string
+          enum: ["active", "inactive"]
+          example: "active"
+        house_id:
+          type: string
+          format: uuid
+    
+    DeviceCreateRequest:
+      type: object
+      required:
+        - serial_number
+        - house_id
+      properties:
+        serial_number:
+          type: string
+          example: "SN987654321"
+        house_id:
+          type: string
+          format: uuid
+
+    TemperatureData:
+      type: object
+      properties:
+        device_id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-03-14T15:00:00Z"
+        temperature:
+          type: number
+          format: float
+          example: 22.5
+        humidity:
+          type: number
+          format: float
+          example: 45.0
